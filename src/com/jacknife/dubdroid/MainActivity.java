@@ -17,6 +17,7 @@ public class MainActivity extends Activity {
     private MediaPlayer sound02;
     private MediaPlayer sound03;
     private MediaPlayer sound04;
+    final private int mStart = 0;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,9 +25,13 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         //Init the media Players
         sound01 = MediaPlayer.create(this, R.raw.loop1);
+        sound01.setLooping(true);
         sound02 = MediaPlayer.create(this, R.raw.loop2);
+        sound02.setLooping(true);
         sound03 = MediaPlayer.create(this, R.raw.loop3);
+        sound03.setLooping(true);
         sound04 = MediaPlayer.create(this, R.raw.loop4);
+        sound04.setLooping(true);
         
         //Setup for Loop1 Button
         Button mButton1 = (Button) findViewById(R.id.loop1);
@@ -114,19 +119,33 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
+				try{
 				//stop all the active sounds
 				if(sound01.isPlaying()){
 					sound01.stop();
+					sound01.prepare();
+					sound01.seekTo(mStart);
 				}
 				if(sound02.isPlaying()){
 					sound02.stop();
+					sound02.prepare();
+					sound02.seekTo(mStart);
 				}
 				if(sound03.isPlaying()){
 					sound03.stop();
+					sound03.prepare();
+					sound03.seekTo(mStart);
 				}
 				if(sound04.isPlaying()){
 					sound04.stop();
+					sound04.prepare();
+					sound04.seekTo(mStart);
 				}
+			}
+				catch (Exception e){
+					System.out.println("IOException");
+				}
+				
 				Utils.makeToast("Stopping...", v.getContext());
 			}
 		});
