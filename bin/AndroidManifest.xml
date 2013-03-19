@@ -2,11 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jacknife.dubdroid"
     android:versionCode="1"
-    android:versionName="1.0" android:installLocation="preferExternal">
+    android:versionName="@string/version" android:installLocation="preferExternal">
 
     <uses-sdk
-        android:minSdkVersion="11"
+        android:minSdkVersion="10"
         android:targetSdkVersion="16" />
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <application
         android:allowBackup="true"

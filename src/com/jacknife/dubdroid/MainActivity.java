@@ -1,42 +1,71 @@
 package com.jacknife.dubdroid;
 
 import android.R.color;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import com.jacknife.Utils;
 
 public class MainActivity extends Activity implements
-		OnAudioFocusChangeListener, OnClickListener {
-
+		OnAudioFocusChangeListener, OnClickListener, OnLongClickListener,
+		OnSeekBarChangeListener {
+	
+	//MAX number of loops in the app
+	//private final int MAX = 8;	
+	
+	//WakeLock to keep the screen on
+	protected PowerManager.WakeLock mWakeLock;
+	
 	// MediaPlayers...one for each track
-	private MediaPlayer sound01;
-	private MediaPlayer sound02;
-	private MediaPlayer sound03;
-	private MediaPlayer sound04;
+	private MediaPlayer[] loopMan = new MediaPlayer[8];
+	
 	// Button objects
 	private Button but01, but02, but03, but04, but05, but06, but07, but08;
 	private Button butStop, butSync;
+	
+	//sLoop contains the loop number associated with current button press
+	private byte sLoop = -1;
+	
+	//SeekBar
+	SeekBar sbar; 
+	
 	// Reset value for seekTo()
 	final private int mStart = 0;
+	
 	// Our very own Candi takes care of audio management!
 	public AudioManager mCandi;
+	
 	// flag array to check if button is on or off.used for color change
 	private boolean bFlag[] = { false, false, false, false, false, false,
 			false, false };
 
+	
+	//onCreate function over ride.
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		//Gain the wakelock
+		final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+        this.mWakeLock.acquire();
+		
 		// Setup the audio manager
 		mCandi = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
@@ -49,43 +78,60 @@ public class MainActivity extends Activity implements
 		}
 
 		// Init the media Players
-		sound01 = MediaPlayer.create(this, R.raw.loop1);
-		sound01.setLooping(true);
-		sound02 = MediaPlayer.create(this, R.raw.loop2);
-		sound02.setLooping(true);
-		sound03 = MediaPlayer.create(this, R.raw.loop3);
-		sound03.setLooping(true);
-		sound04 = MediaPlayer.create(this, R.raw.loop4);
-		sound04.setLooping(true);
+		loopMan[0] = MediaPlayer.create(this, R.raw.loop1);
+		loopMan[0].setLooping(true);
+		loopMan[1] = MediaPlayer.create(this, R.raw.loop2);
+		loopMan[1].setLooping(true);
+		loopMan[2] = MediaPlayer.create(this, R.raw.loop3);
+		loopMan[2].setLooping(true);
+		loopMan[3] = MediaPlayer.create(this, R.raw.loop4);
+		loopMan[3].setLooping(true);
+		loopMan[4] = MediaPlayer.create(this, R.raw.loop5);
+		loopMan[4].setLooping(true);
+		loopMan[5] = MediaPlayer.create(this, R.raw.loop6);
+		loopMan[5].setLooping(true);
+		loopMan[6] = MediaPlayer.create(this, R.raw.loop7);
+		loopMan[6].setLooping(true);
+		loopMan[7] = MediaPlayer.create(this, R.raw.loop8);
+		loopMan[7].setLooping(true);
 
 		// Setup the activities listener as default for all buttons
 		setupListeners(this);
 
 	}
 
-	//Method to setup the Listeners.what else?
+	// Method to setup the Listeners.what else?
 	private void setupListeners(MainActivity mainActivity) {
 		but01 = (Button) findViewById(R.id.loop1);
 		but02 = (Button) findViewById(R.id.loop2);
 		but03 = (Button) findViewById(R.id.loop3);
 		but04 = (Button) findViewById(R.id.loop4);
-		//but05 = (Button)findViewById(R.id.loop5);
-		//but06 = (Button)findViewById(R.id.loop6);
-		//but07 = (Button)findViewById(R.id.loop7);
-		//but08 = (Button)findViewById(R.id.loop8);
+		but05 = (Button)findViewById(R.id.loop5);
+		but06 = (Button)findViewById(R.id.loop6);
+		but07 = (Button)findViewById(R.id.loop7);
+		but08 = (Button)findViewById(R.id.loop8);
 		butStop = (Button) findViewById(R.id.stopButton);
 		butSync = (Button) findViewById(R.id.syncButton);
 		but01.setOnClickListener(this);
 		but02.setOnClickListener(this);
 		but03.setOnClickListener(this);
 		but04.setOnClickListener(this);
-		// but05.setOnClickListener(this);
-		// but06.setOnClickListener(this);
-		// but07.setOnClickListener(this);
-		// but08.setOnClickListener(this);
+		but05.setOnClickListener(this);
+		but06.setOnClickListener(this);
+		but07.setOnClickListener(this);
+		but08.setOnClickListener(this);
+		but01.setOnLongClickListener(this);
+		but02.setOnLongClickListener(this);
+		but03.setOnLongClickListener(this);
+		but04.setOnLongClickListener(this);
+		but05.setOnLongClickListener(this);
+		but06.setOnLongClickListener(this);
+		but07.setOnLongClickListener(this);
+		but08.setOnLongClickListener(this);
 		butStop.setOnClickListener(this);
 		butSync.setOnClickListener(this);
-		
+		sbar = (SeekBar)findViewById(R.id.seekBar1);
+		sbar.setOnSeekBarChangeListener(this);
 	}
 
 	@Override
@@ -95,6 +141,7 @@ public class MainActivity extends Activity implements
 		return true;
 	}
 
+	// Compliance with the Force!
 	@Override
 	public void onAudioFocusChange(int focusState) {
 		// TODO Auto-generated method stub
@@ -128,98 +175,120 @@ public class MainActivity extends Activity implements
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.loop1:
+			toggleLoop(0);
+			toggleHiLite(0);
+			break;
+		case R.id.loop2:
 			toggleLoop(1);
 			toggleHiLite(1);
 			break;
-		case R.id.loop2:
+		case R.id.loop3:
 			toggleLoop(2);
 			toggleHiLite(2);
 			break;
-		case R.id.loop3:
+		case R.id.loop4:
 			toggleLoop(3);
 			toggleHiLite(3);
 			break;
-		case R.id.loop4:
+		case R.id.loop5:
 			toggleLoop(4);
 			toggleHiLite(4);
 			break;
-		case R.id.loop5:
+		case R.id.loop6:
 			toggleLoop(5);
 			toggleHiLite(5);
 			break;
-		case R.id.loop6:
+		case R.id.loop7:
 			toggleLoop(6);
 			toggleHiLite(6);
 			break;
-		case R.id.loop7:
+		case R.id.loop8:
 			toggleLoop(7);
 			toggleHiLite(7);
-			break;
-		case R.id.loop8:
-			toggleLoop(8);
-			toggleHiLite(8);
 			break;
 		case R.id.stopButton:
 			stopAll();
 			break;
 		case R.id.syncButton:
-			Utils.makeToast("No cookie here :(", v.getContext());
+			// Utils.makeToast("No cookie here :(", v.getContext());
+			synchLoops();
 			break;
 		}
 	}
 
+	private void synchLoops() {
+		for (int i = 0; i < 8; i++) {
+			if (bFlag[i]) {
+				stopLoop(i);
+			}
+		}
+		for (int i = 0; i < 8; i++) {
+			if (bFlag[i]) {
+				playLoop(i);
+			}
+		}
+
+	}
+
+	private void playLoop(int i) {
+		if(i>=0 || i<=7)
+			loopMan[i].start();
+		else
+			System.out.println("Invalid loop number at playLoop()"); 
+	}
+
 	private void toggleHiLite(int i) {
 		switch (i) {
-		case 1:
+		case 0:
 			if (bFlag[0])
 				but01.setBackgroundColor(0xF1FF5555);
 			else
 				but01.setBackgroundColor(color.holo_blue_light);
 			break;
-		case 2:
+		case 1:
 			if (bFlag[1])
 				but02.setBackgroundColor(0xF1FF5555);
 			else
 				but02.setBackgroundColor(color.holo_blue_light);
 			break;
-		case 3:
+		case 2:
 			if (bFlag[2])
 				but03.setBackgroundColor(0xF1FF5555);
 			else
 				but03.setBackgroundColor(color.holo_blue_light);
 			break;
-		case 4:
+		case 3:
 			if (bFlag[3])
 				but04.setBackgroundColor(0xF1FF5555);
 			else
 				but04.setBackgroundColor(color.holo_blue_light);
 			break;
-		case 5:
+		case 4:
 			if (bFlag[4])
 				but05.setBackgroundColor(0xF1FF5555);
 			else
 				but05.setBackgroundColor(color.holo_blue_light);
 			break;
-		case 6:
+		case 5:
 			if (bFlag[5])
 				but06.setBackgroundColor(0xF1FF5555);
 			else
 				but06.setBackgroundColor(color.holo_blue_light);
 			break;
-		case 7:
+		case 6:
 			if (bFlag[6])
 				but07.setBackgroundColor(0xF1FF5555);
 			else
 				but07.setBackgroundColor(color.holo_blue_light);
 			break;
-		case 8:
+		case 7:
 			if (bFlag[7])
 				but08.setBackgroundColor(0xF1FF5555);
 			else
 				but08.setBackgroundColor(color.holo_blue_light);
 			break;
 		default:
-			System.out.println("Again with the damn errors!!!");
+			System.out.println("Again with the damn errors!!! "+i);
 			break;
 		}
 
@@ -229,119 +298,35 @@ public class MainActivity extends Activity implements
 	// XD
 	private void stopAll() {
 		try {
-			// stop all the active sounds
-			if (sound01.isPlaying()) {
-				sound01.stop();
-				sound01.prepare();
-				sound01.seekTo(mStart);
-			}
-			if (sound02.isPlaying()) {
-				sound02.stop();
-				sound02.prepare();
-				sound02.seekTo(mStart);
-			}
-			if (sound03.isPlaying()) {
-				sound03.stop();
-				sound03.prepare();
-				sound03.seekTo(mStart);
-			}
-			if (sound04.isPlaying()) {
-				sound04.stop();
-				sound04.prepare();
-				sound04.seekTo(mStart);
-			}
-		} catch (Exception e) {
-			System.out.println("IOException");
+			for(int i=0;i<8;i++){
+				if (loopMan[i].isPlaying()) {
+					loopMan[i].stop();
+					loopMan[i].prepare();
+					loopMan[i].seekTo(mStart);
+					}
+				}
+			} catch (Exception e) {
+			System.out.println("IOException in stopALl()");
+			e.printStackTrace();
 		}
-		for(int j=0;j<4;j++){
-			if(bFlag[j]){
+		for (int j = 0; j < 8; j++) {
+			if (bFlag[j]) {
 				bFlag[j] = !bFlag[j];
-				toggleHiLite(j+1);
+				toggleHiLite(j);
 			}
 		}
-
 		Utils.makeToast("Stopping...", this);
 	}
 
 	// Helper function to toggle the loops on and off
 	private void toggleLoop(int i) {
-		switch (i) {
-		case 1:
-			if (!bFlag[0]) {
-				bFlag[0] = !bFlag[0];
-				sound01.start();
+			if (!bFlag[i]) {
+				bFlag[i] = !bFlag[i];
+				loopMan[i].start();
 			} else {
-				bFlag[0] = !bFlag[0];
-				stopLoop(1);
+				bFlag[i] = !bFlag[i];
+				stopLoop(i);
 			}
-			break;
-		case 2:
-			if (!bFlag[1]) {
-				bFlag[1] = !bFlag[1];
-				sound02.start();
-			} else {
-				bFlag[1] = !bFlag[1];
-				stopLoop(2);
-			}
-			break;
-		case 3:
-			if (!bFlag[2]) {
-				bFlag[2] = !bFlag[2];
-				sound03.start();
-			} else {
-				bFlag[2] = !bFlag[2];
-				stopLoop(3);
-			}
-			break;
-		case 4:
-			if (!bFlag[3]) {
-				bFlag[3] = !bFlag[3];
-				sound04.start();
-			} else {
-				bFlag[3] = !bFlag[3];
-				stopLoop(4);
-			}
-			break;
-		case 5:
-			if (!bFlag[4]) {
-				bFlag[4] = !bFlag[4];
-				// sound05.start();
-			} else {
-				bFlag[4] = !bFlag[4];
-				// stopLoop(5);
-			}
-			break;
-		case 6:
-			if (!bFlag[5]) {
-				bFlag[5] = !bFlag[5];
-				// sound06.start();
-			} else {
-				bFlag[5] = !bFlag[5];
-				// stopLoop(6);
-			}
-			break;
-		case 7:
-			if (!bFlag[6]) {
-				bFlag[6] = !bFlag[6];
-				// sound07.start();
-			} else {
-				bFlag[6] = !bFlag[6];
-				// stopLoop(7);
-			}
-			break;
-		case 8:
-			if (!bFlag[7]) {
-				bFlag[7] = !bFlag[7];
-				// sound08.start();
-			} else {
-				bFlag[7] = !bFlag[7];
-				// stopLoop(8);
-			}
-			break;
-		default:
-			System.out.println("Fucking pixies!!!");
-			break;
-		}
 	}
 
 	// This function basically toggles of the loop
@@ -349,54 +334,103 @@ public class MainActivity extends Activity implements
 	// I guess :P
 	private void stopLoop(int i) {
 		try {
-			switch (i) {
-			case 1:
-				sound01.stop();
-				sound01.prepare();
-				sound01.seekTo(mStart);
-				break;
-			case 2:
-				sound02.stop();
-				sound02.prepare();
-				sound02.seekTo(mStart);
-				break;
-			case 3:
-				sound03.stop();
-				sound03.prepare();
-				sound03.seekTo(mStart);
-				break;
-			case 4:
-				sound04.stop();
-				sound04.prepare();
-				sound04.seekTo(mStart);
-				break;
-			case 5:
-				// sound05.stop();
-				// sound05.prepare();
-				// sound05.seekTo(mStart);
-				break;
-			case 6:
-				// sound06.stop();
-				// sound06.prepare();
-				// sound06.seekTo(mStart);
-				break;
-			case 7:
-				// sound07.stop();
-				// sound07.prepare();
-				// sound07.seekTo(mStart);
-				break;
-			case 8:
-				// sound08.stop();
-				// sound08.prepare();
-				// sound08.seekTo(mStart);
-				break;
-			default:
-				System.out.println("Thats it! Im getting my gun...");
-				break;
-			}
+				loopMan[i].stop();
+				loopMan[i].prepare();
+				loopMan[i].seekTo(mStart);
 		} catch (Exception e) {
 			System.out.println("Fault in toggleLoop");
 		}
 	}
 
+	@Override
+	public void onBackPressed() {
+		for(int i=0;i<8;i++){
+			loopMan[i].release();
+		}
+		super.onBackPressed();
+		Utils.makeToast("Have fun.Keep it sick!", this);
+		this.finish();
+	}
+
+	@SuppressLint("Wakelock")
+	public void onDestroy(){
+		this.mWakeLock.release();
+		super.onDestroy();
+	}
+
+	public void onPause(){
+		this.stopAll();
+		super.onPause();
+	}
+	
+	@Override
+	public boolean onLongClick(View v) {
+		sLoop = (byte)getSelectedSound(v);
+		sbar.setProgress(50);
+		LinearLayout l1 = (LinearLayout) findViewById(R.id.linearLayout1);
+		LinearLayout l2 = (LinearLayout) findViewById(R.id.linearLayout2);
+		l1.setFocusable(false);
+		l1.setClickable(false);
+		l2.setFocusable(false);
+		l2.setClickable(false);
+		l1.setVisibility(View.GONE);
+		l2.setVisibility(View.GONE);
+		FrameLayout volume = (FrameLayout) findViewById(R.id.FrameLayout1);
+		volume.setClickable(true);
+		volume.setFocusable(true);
+		volume.setVisibility(View.VISIBLE);
+		return true;
+	}
+
+	//Returns integer value corresponding to loop number attached to 
+	//the view being passed to it
+	private int getSelectedSound(View v) {
+		switch(v.getId()){
+		case R.id.loop1	:	return 0;	
+		case R.id.loop2	:	return 1;	
+		case R.id.loop3	:	return 2;	
+		case R.id.loop4	:	return 3;	
+		case R.id.loop5	:	return 4;	
+		case R.id.loop6	:	return 5;	
+		case R.id.loop7	:	return 6;	
+		case R.id.loop8	:	return 7;	
+		default			: System.out.println("Buggy Sound selection");
+							return -1;
+		}
+	}
+
+
+	
+	@Override
+	public void onProgressChanged(SeekBar arg0, int level, boolean arg1) {
+		if(arg1){
+			Utils.makeToast(level, this);
+		}
+	}
+
+	@Override
+	public void onStartTrackingTouch(SeekBar seekBar) {
+
+	}
+
+	@Override
+	public void onStopTrackingTouch(SeekBar seekBar) {
+		// First change the sound volume
+		int level = sbar.getProgress();
+		loopMan[sLoop].setVolume(level/2,level/2);
+		FrameLayout volume = (FrameLayout) findViewById(R.id.FrameLayout1);
+		volume.setClickable(false);
+		volume.setFocusable(false);
+		volume.setVisibility(View.GONE);
+		LinearLayout l1 = (LinearLayout) findViewById(R.id.linearLayout1);
+		LinearLayout l2 = (LinearLayout) findViewById(R.id.linearLayout2);
+		l1.setFocusable(true);
+		l1.setClickable(true);
+		l2.setFocusable(true);
+		l2.setClickable(true);
+		l1.setVisibility(View.VISIBLE);
+		l2.setVisibility(View.VISIBLE);
+		Utils.makeToast(seekBar.getProgress(), this);
+	}
+	
 }
