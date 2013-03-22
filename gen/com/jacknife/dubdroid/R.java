@@ -25,11 +25,19 @@ public final class R {
         public static final int logo1=0x7f020001;
     }
     public static final class id {
-        public static final int FrameLayout1=0x7f09000d;
-        public static final int action_settings=0x7f09000f;
+        public static final int FrameLayout1=0x7f09000a;
+        public static final int LinearLayout03=0x7f09000c;
+        public static final int action_settings=0x7f090018;
         public static final int linearLayout1=0x7f090000;
-        public static final int linearLayout2=0x7f09000a;
+        public static final int linearLayout2=0x7f09000d;
         public static final int loop1=0x7f090002;
+        public static final int loop10=0x7f09000f;
+        public static final int loop11=0x7f090010;
+        public static final int loop12=0x7f090011;
+        public static final int loop13=0x7f090012;
+        public static final int loop14=0x7f090013;
+        public static final int loop15=0x7f090014;
+        public static final int loop16=0x7f090015;
         public static final int loop2=0x7f090003;
         public static final int loop3=0x7f090004;
         public static final int loop4=0x7f090005;
@@ -37,9 +45,10 @@ public final class R {
         public static final int loop6=0x7f090007;
         public static final int loop7=0x7f090008;
         public static final int loop8=0x7f090009;
-        public static final int seekBar1=0x7f09000e;
-        public static final int stopButton=0x7f09000b;
-        public static final int syncButton=0x7f09000c;
+        public static final int loop9=0x7f09000e;
+        public static final int seekBar1=0x7f09000b;
+        public static final int stopButton=0x7f090016;
+        public static final int syncButton=0x7f090017;
         public static final int textView1=0x7f090001;
     }
     public static final class layout {
@@ -50,13 +59,21 @@ public final class R {
     }
     public static final class raw {
         public static final int loop1=0x7f040000;
-        public static final int loop2=0x7f040001;
-        public static final int loop3=0x7f040002;
-        public static final int loop4=0x7f040003;
-        public static final int loop5=0x7f040004;
-        public static final int loop6=0x7f040005;
-        public static final int loop7=0x7f040006;
-        public static final int loop8=0x7f040007;
+        public static final int loop10=0x7f040001;
+        public static final int loop11=0x7f040002;
+        public static final int loop12=0x7f040003;
+        public static final int loop13=0x7f040004;
+        public static final int loop14=0x7f040005;
+        public static final int loop15=0x7f040006;
+        public static final int loop16=0x7f040007;
+        public static final int loop2=0x7f040008;
+        public static final int loop3=0x7f040009;
+        public static final int loop4=0x7f04000a;
+        public static final int loop5=0x7f04000b;
+        public static final int loop6=0x7f04000c;
+        public static final int loop7=0x7f04000d;
+        public static final int loop8=0x7f04000e;
+        public static final int loop9=0x7f04000f;
     }
     public static final class string {
         public static final int action_settings=0x7f060001;
